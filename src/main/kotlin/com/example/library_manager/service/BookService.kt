@@ -5,18 +5,16 @@ import com.example.library_manager.dto.book.BookRequest
 import com.example.library_manager.dto.book.BookResponse
 import com.example.library_manager.dto.book.MessageResponse
 import com.example.library_manager.repository.BookRepository
+import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.web.config.PageableHandlerMethodArgumentResolverCustomizer
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 
 @Service
-class BookService(private val bookRepository: BookRepository,
-                  private val pageable: PageableHandlerMethodArgumentResolverCustomizer
-) {
-
+class BookService(private val bookRepository: BookRepository) {
+    @Transactional
     fun createBook(request: BookRequest): BookResponse {
         if (bookRepository.existsByIsbn(request.isbn)) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Book with ISBN ${request.isbn} already exists")
@@ -37,7 +35,7 @@ class BookService(private val bookRepository: BookRepository,
         )
     }
 
-    open fun getAllBooks(pageable: Pageable): Page<BookResponse> {
+    fun getAllBooks(pageable: Pageable): Page<BookResponse> {
         return bookRepository.findAll(pageable).map { book ->
             BookResponse(
                 id = book.id!!,
@@ -48,7 +46,9 @@ class BookService(private val bookRepository: BookRepository,
             )
         }
     }
-    fun updateBook(id:Long,request: BookRequest) {
+
+    @Transactional
+    fun updateBook(id: Long, request: BookRequest) {
         val book = bookRepository.findById(id)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Book with id $id not found") }
 
@@ -56,14 +56,19 @@ class BookService(private val bookRepository: BookRepository,
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Book with ISBN ${request.isbn} already exists")
         }
 
-        bookRepository.save(book.copy(title = request.title,
-            author = request.author,
-            isbn = request.isbn,
-            publishedYear = request.publishedYear))
+        bookRepository.save(
+            book.copy(
+                title = request.title,
+                author = request.author,
+                isbn = request.isbn,
+                publishedYear = request.publishedYear
+            )
+        )
         return
     }
 
-    fun deleteBook(id:Long): MessageResponse {
+    @Transactional
+    fun deleteBook(id: Long): MessageResponse {
         if (!bookRepository.existsById(id)) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Book with id $id not found")
         }
