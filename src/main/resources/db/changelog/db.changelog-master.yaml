@@ -1,0 +1,140 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: denis
+      changes:
+        - createTable:
+            tableName: book
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: author
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: isbn
+                  type: varchar(17)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: published_year
+                  type: int
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_book_isbn
+            tableName: book
+            columns:
+              - column:
+                  name: isbn
+  - changeSet:
+      id: 2
+      author: denis
+      changes:
+        - createTable:
+            tableName: reader
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: registered_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_reader_email
+            tableName: reader
+            columns:
+              - column:
+                  name: email
+  - changeSet:
+      id: 3
+      author: denis
+      changes:
+        - createTable:
+            tableName: library_item
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: book_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_library_item_book
+                    references: book(id)
+              - column:
+                  name: total_copies
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: available_copies
+                  type: int
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 4
+      author: denis
+      changes:
+        - createTable:
+            tableName: loan
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: reader_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_loan_reader
+                    references: reader(id)
+              - column:
+                  name: library_item_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_loan_library_item
+                    references: library_item(id)
+              - column:
+                  name: loan_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: return_date
+                  type: timestamp
