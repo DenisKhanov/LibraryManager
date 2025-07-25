@@ -1,4 +1,4 @@
-package com.example.library_manager.dto.loan
+package com.example.library_manager.controller.dto.loan
 
 import java.time.LocalDateTime
 

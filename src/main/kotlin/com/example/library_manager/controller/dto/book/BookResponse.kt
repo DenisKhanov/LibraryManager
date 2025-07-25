@@ -1,4 +1,4 @@
-package com.example.library_manager.dto.book
+package com.example.library_manager.controller.dto.book
 
 data class BookResponse(
     val id: Long,

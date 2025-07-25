@@ -1,4 +1,4 @@
-package com.example.library_manager.dto.reader
+package com.example.library_manager.controller.dto.reader
 
 import java.time.LocalDateTime
 
