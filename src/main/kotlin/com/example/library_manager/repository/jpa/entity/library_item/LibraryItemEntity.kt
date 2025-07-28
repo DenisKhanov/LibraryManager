@@ -1,13 +1,17 @@
 package com.example.library_manager.repository.jpa.entity.library_item
 
 import com.example.library_manager.repository.jpa.entity.book.BookEntity
-import com.example.library_manager.repository.jpa.entity.loan.Loan
+import com.example.library_manager.repository.jpa.entity.loan.LoanEntity
 import jakarta.persistence.*
 import jakarta.validation.constraints.Min
 
 @Entity
 @Table(name = "library_item")
-data class LibraryItem(
+@NamedEntityGraph(
+    name = "LibraryItemEntity.withBook",
+    attributeNodes = [NamedAttributeNode("bookEntity")]
+)
+data class LibraryItemEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -24,6 +28,6 @@ data class LibraryItem(
     @Min(value = 0, message = "Available copies cannot be negative")
     val availableCopies: Int,
 
-    @OneToMany(mappedBy = "libraryItem", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val loans: List<Loan> = emptyList()
+    @OneToMany(mappedBy = "libraryItemEntity", cascade = [CascadeType.PERSIST, CascadeType.MERGE], orphanRemoval = false)
+    val loanEntities: Set<LoanEntity> = emptySet()
 )

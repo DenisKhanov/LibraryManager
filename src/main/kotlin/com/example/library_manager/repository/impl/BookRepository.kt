@@ -2,17 +2,17 @@ package com.example.library_manager.repository.impl
 
 import com.example.library_manager.domain.Book
 import com.example.library_manager.repository.jpa.BookJpaRepository
-import com.example.library_manager.repository.maper.toDomain
-import com.example.library_manager.repository.maper.toEntity
+import com.example.library_manager.repository.mapper.toDomain
+import com.example.library_manager.repository.mapper.toEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
-import kotlin.jvm.optionals.getOrNull
 
 @Repository
 class BookRepository (val bookJpaRepository: BookJpaRepository){
     fun findById(id: Long): Book? {
-        val book = bookJpaRepository.findById(id).getOrNull()
+        val book = bookJpaRepository.findByIdOrNull(id)
         return book?.toDomain()
     }
 

@@ -1,15 +1,14 @@
-package com.example.library_manager.repository.maper
+package com.example.library_manager.repository.mapper
 
 import com.example.library_manager.domain.Book
 import com.example.library_manager.repository.jpa.entity.book.BookEntity
 
 fun BookEntity.toDomain() = Book(
-    id = id,
+    id = id!!, //TODO{добавить проверку}
     isbn = isbn,
     title = title,
     author = author,
     publishedYear = publishedYear,
-    libraryItems = libraryItems,
 )
 
 fun Book.toEntity(): BookEntity {

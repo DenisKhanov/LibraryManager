@@ -1,18 +1,24 @@
 package com.example.library_manager
 
 import com.example.library_manager.controller.dto.book.BookCreateRequest
+import com.example.library_manager.controller.dto.book.BookResponse
 import com.example.library_manager.controller.dto.book.BookUpdateRequest
+import com.example.library_manager.repository.jpa.BookJpaRepository
+import com.example.library_manager.repository.jpa.entity.book.BookEntity
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -25,6 +31,9 @@ class BookControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
+    @Autowired
+    private lateinit var bookJpaRepository: BookJpaRepository
+
     @Test
     fun `should create book successfully`() {
         val request = BookCreateRequest(
@@ -34,7 +43,7 @@ class BookControllerTest {
             publishedYear = 1949
         )
 
-        mockMvc.perform(
+        val result = mockMvc.perform(
             post("/books")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
@@ -45,6 +54,17 @@ class BookControllerTest {
             .andExpect(jsonPath("$.author").value("George Orwell"))
             .andExpect(jsonPath("$.isbn").value("9780451524935"))
             .andExpect(jsonPath("$.publishedYear").value(1949))
+            .andReturn()
+
+        val response = objectMapper.readValue(result.response.contentAsString, BookResponse::class.java)
+        val bookId = response.id
+
+        val savedBook = bookJpaRepository.findByIdOrNull(bookId)
+        assertNotNull(savedBook, "Book should be saved in the database")
+        assertEquals(request.title, savedBook.title)
+        assertEquals(request.author, savedBook.author)
+        assertEquals(request.isbn, savedBook.isbn)
+        assertEquals(request.publishedYear, savedBook.publishedYear)
     }
 
     @Test
@@ -76,7 +96,6 @@ class BookControllerTest {
             publishedYear = 1949
         )
 
-        // Создаём первую книгу
         mockMvc.perform(
             post("/books")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -84,7 +103,6 @@ class BookControllerTest {
         )
             .andExpect(status().isCreated)
 
-        // Пытаемся создать книгу с тем же ISBN
         val duplicateRequest = BookCreateRequest(
             title = "Animal Farm",
             author = "George Orwell",
@@ -103,56 +121,83 @@ class BookControllerTest {
 
     @Test
     fun `should get paginated list of books`() {
-        // Создаём две книги
-        val request1 = BookCreateRequest(
+
+        val book1 = BookEntity(
             title = "1984",
             author = "George Orwell",
             isbn = "9780451524935",
             publishedYear = 1949
         )
-        val request2 = BookCreateRequest(
+        val book2 = BookEntity(
             title = "Animal Farm",
             author = "George Orwell",
             isbn = "9780451526342",
             publishedYear = 1945
         )
 
-        mockMvc.perform(
-            post("/books")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request1))
-        )
-            .andExpect(status().isCreated)
+        val savedBook1 = bookJpaRepository.save(book1)
+        val savedBook2 = bookJpaRepository.save(book2)
 
-        mockMvc.perform(
-            post("/books")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request2))
-        )
-            .andExpect(status().isCreated)
-
-        // Получаем список с пагинацией
         mockMvc.perform(
             get("/books")
                 .param("page", "0")
-                .param("size", "10")
+                .param("size", "1")
                 .param("sort", "title,asc")
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content").isArray)
-            .andExpect(jsonPath("$.content.length()").value(2))
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].id").value(savedBook1.id))
             .andExpect(jsonPath("$.content[0].title").value("1984"))
-            .andExpect(jsonPath("$.content[1].title").value("Animal Farm"))
+            .andExpect(jsonPath("$.content[0].author").value("George Orwell"))
+            .andExpect(jsonPath("$.content[0].isbn").value("9780451524935"))
+            .andExpect(jsonPath("$.content[0].publishedYear").value(1949))
             .andExpect(jsonPath("$.pageable.pageNumber").value(0))
-            .andExpect(jsonPath("$.pageable.pageSize").value(10))
+            .andExpect(jsonPath("$.pageable.pageSize").value(1))
             .andExpect(jsonPath("$.totalElements").value(2))
-            .andExpect(jsonPath("$.totalPages").value(1))
+            .andExpect(jsonPath("$.totalPages").value(2))
+
+        mockMvc.perform(
+            get("/books")
+                .param("page", "1")
+                .param("size", "1")
+                .param("sort", "title,asc")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content").isArray)
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].id").value(savedBook2.id))
+            .andExpect(jsonPath("$.content[0].title").value("Animal Farm"))
+            .andExpect(jsonPath("$.content[0].author").value("George Orwell"))
+            .andExpect(jsonPath("$.content[0].isbn").value("9780451526342"))
+            .andExpect(jsonPath("$.content[0].publishedYear").value(1945))
+            .andExpect(jsonPath("$.pageable.pageNumber").value(1))
+            .andExpect(jsonPath("$.pageable.pageSize").value(1))
+            .andExpect(jsonPath("$.totalElements").value(2))
+            .andExpect(jsonPath("$.totalPages").value(2))
+
+
+        mockMvc.perform(
+            get("/books")
+                .param("page", "2")
+                .param("size", "1")
+                .param("sort", "title,asc")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content").isArray)
+            .andExpect(jsonPath("$.content.length()").value(0))
+            .andExpect(jsonPath("$.pageable.pageNumber").value(2))
+            .andExpect(jsonPath("$.pageable.pageSize").value(1))
+            .andExpect(jsonPath("$.totalElements").value(2))
+            .andExpect(jsonPath("$.totalPages").value(2))
     }
 
     @Test
     fun `should update book successfully`() {
-        // Создаём книгу
+
         val createRequest = BookCreateRequest(
             title = "1984",
             author = "George Orwell",
@@ -170,7 +215,6 @@ class BookControllerTest {
 
         val bookId = createResponse["id"].toString()
 
-        // Обновляем книгу
         val updateRequest = BookUpdateRequest(
             id= bookId.toLong(),
             title = "1984 (New Edition)",
@@ -184,7 +228,7 @@ class BookControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest))
         )
-            .andExpect(status().isOk)
+            .andExpect(status().isNoContent)
     }
 
     @Test
@@ -208,7 +252,7 @@ class BookControllerTest {
 
     @Test
     fun `should delete book successfully`() {
-        // Создаём книгу
+
         val createRequest = BookCreateRequest(
             title = "1984",
             author = "George Orwell",
@@ -226,13 +270,11 @@ class BookControllerTest {
 
         val bookId = createResponse["id"].toString()
 
-        // Удаляем книгу
         mockMvc.perform(
             delete("/books/$bookId")
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.message").value("Book with id $bookId deleted successfully"))
     }
 
     @Test

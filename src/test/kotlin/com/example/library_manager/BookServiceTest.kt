@@ -1,14 +1,12 @@
 package com.example.library_manager
 
-
 import com.example.library_manager.controller.dto.book.BookCreateRequest
-import com.example.library_manager.controller.dto.book.MessageResponse
-import com.example.library_manager.controller.maper.toDomain
+import com.example.library_manager.controller.mapper.toDomain
 import com.example.library_manager.domain.Book
 import com.example.library_manager.repository.impl.BookRepository
-import com.example.library_manager.repository.jpa.entity.book.BookEntity
-
 import com.example.library_manager.service.BookService
+import com.example.library_manager.service.exceptions.DuplicateIsbnException
+import com.example.library_manager.service.exceptions.ResourceNotFoundException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -16,8 +14,6 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -67,21 +63,18 @@ class BookServiceTest {
         )
         whenever(bookRepository.existsByIsbn(request.isbn)).thenReturn(true)
 
-        val exception = assertFailsWith<ResponseStatusException> {
+        val exception = assertFailsWith<DuplicateIsbnException> {
             bookService.createBook(request.toDomain())
         }
-        assertEquals(HttpStatus.BAD_REQUEST, exception.statusCode)
-        assertEquals("Book with ISBN ${request.isbn} already exists", exception.reason)
+
+        assertEquals("Book with ISBN ${request.isbn} already exists", exception.message)
     }
 
     @Test
     fun `should delete book successfully`() {
         val bookId = 1L
         whenever(bookRepository.existsById(bookId)).thenReturn(true)
-
-        val response = bookService.deleteBook(bookId)
-
-        assertEquals(MessageResponse("Book with id $bookId deleted successfully"), response)
+        bookService.deleteBook(bookId)
         verify(bookRepository).existsById(bookId)
         verify(bookRepository).deleteById(bookId)
     }
@@ -91,10 +84,9 @@ class BookServiceTest {
         val bookId = 999L
         whenever(bookRepository.existsById(bookId)).thenReturn(false)
 
-        val exception = assertFailsWith<ResponseStatusException> {
+        val exception = assertFailsWith<ResourceNotFoundException> {
             bookService.deleteBook(bookId)
         }
-        assertEquals(HttpStatus.NOT_FOUND, exception.statusCode)
-        assertEquals("Book with id $bookId not found", exception.reason)
+        assertEquals("Book with id $bookId not found", exception.message)
     }
 }

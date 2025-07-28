@@ -1,66 +1,36 @@
 package com.example.library_manager.service
 
-import com.example.library_manager.repository.jpa.entity.library_item.LibraryItem
-import com.example.library_manager.controller.dto.book.BookResponse
-import com.example.library_manager.controller.dto.library_item.LibraryItemRequest
-import com.example.library_manager.controller.dto.library_item.LibraryItemResponse
-import com.example.library_manager.repository.jpa.BookJpaRepository
-import com.example.library_manager.repository.jpa.LibraryItemRepository
+import com.example.library_manager.domain.LibraryItem
+import com.example.library_manager.repository.impl.BookRepository
+import com.example.library_manager.repository.impl.LibraryItemRepository
+import com.example.library_manager.service.exceptions.ResourceNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 
 @Service
 class LibraryItemService(
     private val libraryItemRepository: LibraryItemRepository,
-    private val bookJpaRepository: BookJpaRepository
+    private val bookRepository: BookRepository
 ) {
 
     @Transactional
-    fun createLibraryItem(request: LibraryItemRequest): LibraryItemResponse {
-        val book = bookJpaRepository.findById(request.bookId)
-            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Book with id ${request.bookId} not found") }
+    fun createLibraryItem(bookId: Long, totalCopies: Int): LibraryItem {
+        val book = bookRepository.findById(bookId) ?: throw ResourceNotFoundException("Book",bookId)
 
         val libraryItem = LibraryItem(
-            bookEntity = book,
-            totalCopies = request.totalCopies,
-            availableCopies = request.totalCopies // При создании все копии доступны
+            book = book,
+            totalCopies = totalCopies,
+            availableCopies = totalCopies,
         )
-
         val savedLibraryItem = libraryItemRepository.save(libraryItem)
 
-        return LibraryItemResponse(
-            id = savedLibraryItem.id!!,
-            book = BookResponse(
-                id = book.id!!,
-                title = book.title,
-                author = book.author,
-                isbn = book.isbn,
-                publishedYear = book.publishedYear
-            ),
-            totalCopies = savedLibraryItem.totalCopies,
-            availableCopies = savedLibraryItem.availableCopies
-        )
+        return savedLibraryItem
     }
 
 
-    fun getAllLibraryItems(pageable: Pageable): Page<LibraryItemResponse> {
-        return libraryItemRepository.findAll(pageable).map { libraryItem ->
-            LibraryItemResponse(
-                id = libraryItem.id!!,
-                book = BookResponse(
-                    id = libraryItem.bookEntity.id!!,
-                    title = libraryItem.bookEntity.title,
-                    author = libraryItem.bookEntity.author,
-                    isbn = libraryItem.bookEntity.isbn,
-                    publishedYear = libraryItem.bookEntity.publishedYear
-                ),
-                totalCopies = libraryItem.totalCopies,
-                availableCopies = libraryItem.availableCopies
-            )
-        }
+    fun getAllLibraryItems(pageable: Pageable): Page<LibraryItem> {
+        return libraryItemRepository.findAll(pageable)
     }
 }

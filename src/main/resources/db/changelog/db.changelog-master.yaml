@@ -67,12 +67,6 @@ databaseChangeLog:
                   type: timestamp
                   constraints:
                     nullable: false
-        - createIndex:
-            indexName: idx_reader_email
-            tableName: reader
-            columns:
-              - column:
-                  name: email
   - changeSet:
       id: 3
       author: denis
@@ -91,6 +85,7 @@ databaseChangeLog:
                   type: bigint
                   constraints:
                     nullable: false
+                    checkConstraint: available_copies <= total_copies
                     foreignKeyName: fk_library_item_book
                     references: book(id)
               - column:
@@ -103,6 +98,12 @@ databaseChangeLog:
                   type: int
                   constraints:
                     nullable: false
+        - createIndex:
+            indexName: idx_library_item_book
+            tableName: library_item
+            columns:
+              - column:
+                  name: book_id
   - changeSet:
       id: 4
       author: denis
@@ -138,3 +139,15 @@ databaseChangeLog:
               - column:
                   name: return_date
                   type: timestamp
+        - createIndex:
+            indexName: idx_loan_reader
+            tableName: loan
+            columns:
+              - column:
+                  name: reader_id
+        - createIndex:
+            indexName: idx_loan_library_item
+            tableName: loan
+            columns:
+              - column:
+                  name: library_item_id

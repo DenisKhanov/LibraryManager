@@ -1,4 +1,4 @@
-package com.example.library_manager.controller.maper
+package com.example.library_manager.controller.mapper
 
 import com.example.library_manager.controller.dto.book.BookCreateRequest
 import com.example.library_manager.controller.dto.book.BookResponse
@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 
 fun Book.toResponse(): BookResponse {
-    val bookId = id ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Book ID is null") as Throwable
+    val bookId = id ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Book ID is null")
     return BookResponse(
         id = bookId,
         title = title,
