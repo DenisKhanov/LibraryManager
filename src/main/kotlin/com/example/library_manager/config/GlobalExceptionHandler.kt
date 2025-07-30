@@ -1,8 +1,11 @@
 package com.example.library_manager.config
 
-import com.example.library_manager.service.exceptions.DuplicateIsbnException
-import com.example.library_manager.service.exceptions.Exception
-import com.example.library_manager.service.exceptions.ResourceNotFoundException
+import com.example.library_manager.service.exceptions.DuplicateIsbnCustomException
+import com.example.library_manager.service.exceptions.DuplicateEmailCustomException
+import com.example.library_manager.service.exceptions.CustomException
+import com.example.library_manager.service.exceptions.LoanAlreadyReturnedCustomException
+import com.example.library_manager.service.exceptions.NotAvailableCustomException
+import com.example.library_manager.service.exceptions.ResourceNotFoundCustomException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
@@ -24,8 +27,8 @@ class GlobalExceptionHandler {
         return ResponseEntity(errors, HttpStatus.BAD_REQUEST)
     }
 
-    @ExceptionHandler(DuplicateIsbnException::class)
-    fun handleDuplicateIsbnException(ex: DuplicateIsbnException): ResponseEntity<ErrorResponse> {
+    @ExceptionHandler(DuplicateIsbnCustomException::class)
+    fun handleDuplicateIsbnException(ex: DuplicateIsbnCustomException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(
             ErrorResponse(
                 status = HttpStatus.BAD_REQUEST.value(),
@@ -36,8 +39,43 @@ class GlobalExceptionHandler {
         )
     }
 
-    @ExceptionHandler(ResourceNotFoundException::class)
-    fun handleResourceNotFoundException(ex: ResourceNotFoundException): ResponseEntity<ErrorResponse> {
+    @ExceptionHandler(DuplicateEmailCustomException::class)
+    fun handleDuplicateEmailException(ex: DuplicateEmailCustomException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse(
+                status = HttpStatus.BAD_REQUEST.value(),
+                error = HttpStatus.BAD_REQUEST.reasonPhrase,
+                message = ex.message ?: "Duplicate email"
+            ),
+            HttpStatus.BAD_REQUEST
+        )
+    }
+
+    @ExceptionHandler(LoanAlreadyReturnedCustomException::class)
+    fun handleLoanAlreadyReturnedException(ex: LoanAlreadyReturnedCustomException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse(
+                status = HttpStatus.BAD_REQUEST.value(),
+                error = HttpStatus.BAD_REQUEST.reasonPhrase,
+                message = ex.message ?: "Already returned"
+            ),
+            HttpStatus.BAD_REQUEST
+        )
+    }
+    @ExceptionHandler(NotAvailableCustomException::class)
+    fun handleNotAvailableException(ex: NotAvailableCustomException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse(
+                status = HttpStatus.BAD_REQUEST.value(),
+                error = HttpStatus.BAD_REQUEST.reasonPhrase,
+                message = ex.message ?: "Not available"
+            ),
+            HttpStatus.BAD_REQUEST
+        )
+    }
+
+    @ExceptionHandler(ResourceNotFoundCustomException::class)
+    fun handleResourceNotFoundException(ex: ResourceNotFoundCustomException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(
             ErrorResponse(
                 status = HttpStatus.NOT_FOUND.value(),
@@ -49,8 +87,10 @@ class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(Exception::class)
-    fun handleLibraryException(ex: Exception): ResponseEntity<ErrorResponse> {
+
+
+    @ExceptionHandler(CustomException::class)
+    fun handleLibraryException(ex: CustomException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(
             ErrorResponse(
                 status = HttpStatus.INTERNAL_SERVER_ERROR.value(),

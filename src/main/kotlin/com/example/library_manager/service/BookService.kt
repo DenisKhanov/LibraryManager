@@ -2,8 +2,8 @@ package com.example.library_manager.service
 
 import com.example.library_manager.domain.Book
 import com.example.library_manager.repository.impl.BookRepository
-import com.example.library_manager.service.exceptions.DuplicateIsbnException
-import com.example.library_manager.service.exceptions.ResourceNotFoundException
+import com.example.library_manager.service.exceptions.DuplicateIsbnCustomException
+import com.example.library_manager.service.exceptions.ResourceNotFoundCustomException
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -14,7 +14,7 @@ class BookService(private val bookRepository: BookRepository) {
     @Transactional
     fun createBook(book: Book): Book {
         if (bookRepository.existsByIsbn(book.isbn)) {
-            throw DuplicateIsbnException(book.isbn)
+            throw DuplicateIsbnCustomException(book.isbn)
         }
         val savedBook = bookRepository.save(book)
         return savedBook
@@ -28,10 +28,10 @@ class BookService(private val bookRepository: BookRepository) {
     @Transactional
     fun updateBook(book: Book) {
 
-        val oldBook = bookRepository.findById(book.id!!) ?: throw ResourceNotFoundException("Book", book.id)
+        val oldBook = bookRepository.findById(book.id!!) ?: throw ResourceNotFoundCustomException("Book", book.id)
 
         if (oldBook.isbn != book.isbn && bookRepository.existsByIsbn(book.isbn)) {
-            throw DuplicateIsbnException(book.isbn)
+            throw DuplicateIsbnCustomException(book.isbn)
         }
 
         bookRepository.save(book)
@@ -39,7 +39,7 @@ class BookService(private val bookRepository: BookRepository) {
 
     @Transactional
     fun deleteBook(id: Long) {
-        if (!bookRepository.existsById(id)) throw ResourceNotFoundException("Book", id)
+        if (!bookRepository.existsById(id)) throw ResourceNotFoundCustomException("Book", id)
         bookRepository.deleteById(id)
     }
 }

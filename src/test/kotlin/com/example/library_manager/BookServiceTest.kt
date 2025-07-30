@@ -5,8 +5,8 @@ import com.example.library_manager.controller.mapper.toDomain
 import com.example.library_manager.domain.Book
 import com.example.library_manager.repository.impl.BookRepository
 import com.example.library_manager.service.BookService
-import com.example.library_manager.service.exceptions.DuplicateIsbnException
-import com.example.library_manager.service.exceptions.ResourceNotFoundException
+import com.example.library_manager.service.exceptions.DuplicateIsbnCustomException
+import com.example.library_manager.service.exceptions.ResourceNotFoundCustomException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -63,7 +63,7 @@ class BookServiceTest {
         )
         whenever(bookRepository.existsByIsbn(request.isbn)).thenReturn(true)
 
-        val exception = assertFailsWith<DuplicateIsbnException> {
+        val exception = assertFailsWith<DuplicateIsbnCustomException> {
             bookService.createBook(request.toDomain())
         }
 
@@ -84,9 +84,9 @@ class BookServiceTest {
         val bookId = 999L
         whenever(bookRepository.existsById(bookId)).thenReturn(false)
 
-        val exception = assertFailsWith<ResourceNotFoundException> {
+        val exception = assertFailsWith<ResourceNotFoundCustomException> {
             bookService.deleteBook(bookId)
         }
-        assertEquals("Book with id $bookId not found", exception.message)
+        assertEquals("Book with ID $bookId not found", exception.message)
     }
 }

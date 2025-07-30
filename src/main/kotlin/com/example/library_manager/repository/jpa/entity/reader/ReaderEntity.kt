@@ -1,12 +1,12 @@
 package com.example.library_manager.repository.jpa.entity.reader
 
-import com.example.library_manager.repository.jpa.entity.loan.Loan
+import com.example.library_manager.repository.jpa.entity.loan.LoanEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "reader")
-data class Reader(
+data class ReaderEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -20,6 +20,6 @@ data class Reader(
     @Column(name = "registered_at", nullable = false)
     val registeredAt: LocalDateTime = LocalDateTime.now(),
 
-    @OneToMany(mappedBy = "reader", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val loans: List<Loan> = emptyList()
+    @OneToMany(mappedBy = "readerEntity", cascade = [CascadeType.PERSIST, CascadeType.MERGE], orphanRemoval = false)
+    val loanEntities: Set<LoanEntity> = emptySet()
 )

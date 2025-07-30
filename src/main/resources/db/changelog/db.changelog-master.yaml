@@ -85,7 +85,6 @@ databaseChangeLog:
                   type: bigint
                   constraints:
                     nullable: false
-                    checkConstraint: available_copies <= total_copies
                     foreignKeyName: fk_library_item_book
                     references: book(id)
               - column:
@@ -98,6 +97,7 @@ databaseChangeLog:
                   type: int
                   constraints:
                     nullable: false
+                    checkConstraint: available_copies <= total_copies
         - createIndex:
             indexName: idx_library_item_book
             tableName: library_item
