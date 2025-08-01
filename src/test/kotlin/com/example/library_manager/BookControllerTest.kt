@@ -6,6 +6,7 @@ import com.example.library_manager.controller.dto.book.BookUpdateRequest
 import com.example.library_manager.repository.jpa.BookJpaRepository
 import com.example.library_manager.repository.jpa.entity.book.BookEntity
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -33,6 +34,11 @@ class BookControllerTest {
 
     @Autowired
     private lateinit var bookJpaRepository: BookJpaRepository
+
+    @BeforeEach
+    fun setUp() {
+        bookJpaRepository.deleteAll()
+    }
 
     @Test
     fun `should create book successfully`() {
@@ -70,10 +76,10 @@ class BookControllerTest {
     @Test
     fun `should return 400 for invalid book request`() {
         val invalidRequest = BookCreateRequest(
-            title = "", // Пустое название
+            title = "",
             author = "George Orwell",
-            isbn = "invalid-isbn", // Некорректный ISBN
-            publishedYear = 0 // Некорректный год
+            isbn = "invalid-isbn",
+            publishedYear = 0
         )
 
         mockMvc.perform(
@@ -247,7 +253,7 @@ class BookControllerTest {
                 .content(objectMapper.writeValueAsString(updateRequest))
         )
             .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.message").value("Book with id 999 not found"))
+            .andExpect(jsonPath("$.message").value("Book with ID 999 not found"))
     }
 
     @Test
@@ -284,6 +290,6 @@ class BookControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.message").value("Book with id 999 not found"))
+            .andExpect(jsonPath("$.message").value("Book with ID 999 not found"))
     }
 }

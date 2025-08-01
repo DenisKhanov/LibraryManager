@@ -8,7 +8,6 @@ data class LibraryItem(
 
     val totalCopies: Int,
 
-    val availableCopies: Int,
+    var availableCopies: Int,
 
-
-)
+    )

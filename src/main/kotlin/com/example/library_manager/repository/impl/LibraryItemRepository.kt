@@ -10,7 +10,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 
 @Repository
-class LibraryItemRepository(val libraryItemJpaRepository: LibraryItemJpaRepository) {
+class LibraryItemRepository(private val libraryItemJpaRepository: LibraryItemJpaRepository) {
 
 
     fun save(libraryItem: LibraryItem): LibraryItem {
