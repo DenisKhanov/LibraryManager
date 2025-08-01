@@ -7,5 +7,5 @@ data class Loan(
     val reader: Reader,
     val libraryItem: LibraryItem,
     val loanDate: LocalDateTime = LocalDateTime.now(),
-    val returnDate: LocalDateTime? = null
+    var returnDate: LocalDateTime? = null
 )

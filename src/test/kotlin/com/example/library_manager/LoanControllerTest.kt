@@ -318,10 +318,10 @@ class LoanControllerTest {
         assertNull(savedLoanEntity.returnDate, "LoanEntity returnDate should be null")
 
         mockMvc.perform(
-            post("/loans/${savedLoanEntity.id}/return")
+            put("/loans/${savedLoanEntity.id}/return")
                 .contentType(MediaType.APPLICATION_JSON)
         )
-            .andExpect(status().isCreated)
+            .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(savedLoanEntity.id))
             .andExpect(jsonPath("$.readerId").value(savedReaderEntity.id))
             .andExpect(jsonPath("$.libraryItemId").value(savedLibraryItemEntity.id))
@@ -337,7 +337,7 @@ class LoanControllerTest {
       val loanId = 999L
 
         mockMvc.perform(
-            post("/loans/$loanId/return")
+            put("/loans/$loanId/return")
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isNotFound)
@@ -415,7 +415,7 @@ class LoanControllerTest {
         )
 
         mockMvc.perform(
-            post("/loans/${savedLoanEntity.id}/return")
+            put("/loans/${savedLoanEntity.id}/return")
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isBadRequest)
@@ -625,7 +625,7 @@ class LoanControllerTest {
         )
         assertNull(savedLoanEntity2.returnDate, "LoanEntity2 returnDate should be null")
 
-        // Запрашиваем первую страницу
+
         mockMvc.perform(
             get("/loans/readers/${savedReaderEntity.id}/loans")
                 .param("page", "0")
@@ -640,7 +640,7 @@ class LoanControllerTest {
             .andExpect(jsonPath("$.totalElements").value(2))
             .andExpect(jsonPath("$.totalPages").value(2))
 
-        // Запрашиваем вторую страницу
+
         mockMvc.perform(
             get("/loans/readers/${savedReaderEntity.id}/loans")
                 .param("page", "1")

@@ -32,12 +32,12 @@ class LoanService(
         if (libraryItem.availableCopies <= 0) {
             throw NotAvailableCustomException("Library item", libraryItemId)
         }
-        val newLibraryItem = libraryItem.copy(availableCopies = libraryItem.availableCopies - 1)
-        libraryItemRepository.save(newLibraryItem)
+        libraryItem.availableCopies -= 1
+        libraryItemRepository.save(libraryItem)
 
         val loan = Loan(
             reader = reader,
-            libraryItem = newLibraryItem,
+            libraryItem = libraryItem,
             loanDate = LocalDateTime.now(),
         )
         val savedLoan = loanRepository.save(loan)
@@ -60,11 +60,11 @@ class LoanService(
             libraryItemId
         )
 
-        val newLibraryItem = libraryItem.copy(availableCopies = libraryItem.availableCopies + 1)
-        libraryItemRepository.save(newLibraryItem)
+        libraryItem.availableCopies += + 1
+        libraryItemRepository.save(libraryItem)
 
-        val newLoan = loan.copy(returnDate = LocalDateTime.now())
-        val savedLoan = loanRepository.save(newLoan)
+        loan.returnDate = LocalDateTime.now()
+        val savedLoan = loanRepository.save(loan)
         return savedLoan
     }
 

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository
 
 
 @Repository
-class ReaderRepository (val readerJpaRepository: ReaderJpaRepository){
+class ReaderRepository (private val readerJpaRepository: ReaderJpaRepository){
     fun save(reader: Reader): Reader {
         val readerEntity = reader.toEntity()
         val savedEntity = readerJpaRepository.save(readerEntity)

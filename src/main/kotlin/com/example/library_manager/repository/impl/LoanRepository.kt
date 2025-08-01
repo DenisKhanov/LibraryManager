@@ -10,7 +10,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 
 @Repository
-class LoanRepository(val loanJpaRepository: LoanJpaRepository) {
+class LoanRepository(private val loanJpaRepository: LoanJpaRepository) {
     fun save(loan: Loan): Loan {
         val loanEntity = loan.toEntity()
         val savedLoan = loanJpaRepository.save(loanEntity)

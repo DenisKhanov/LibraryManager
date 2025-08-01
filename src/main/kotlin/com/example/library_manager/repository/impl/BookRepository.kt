@@ -10,7 +10,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 
 @Repository
-class BookRepository (val bookJpaRepository: BookJpaRepository){
+class BookRepository (private val bookJpaRepository: BookJpaRepository){
     fun findById(id: Long): Book? {
         val book = bookJpaRepository.findByIdOrNull(id)
         return book?.toDomain()
